@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuralPulse — AI Tools & Trends</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080A0E;
+    --bg2: #0D1017;
+    --bg3: #12161E;
+    --surface: #161B26;
+    --surface2: #1C2333;
+    --border: #222A3A;
+    --border2: #2A3550;
+    --accent: #00E5FF;
+    --accent2: #FF3CAC;
+    --accent3: #7B5EA7;
+    --gold: #F0C040;
+    --text: #E8EDF5;
+    --text2: #8A96A8;
+    --text3: #556070;
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor {
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s ease;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1.5px solid rgba(0,229,255,0.4);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.15s ease;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9997;
+    opacity: 0.5;
+  }
+
+  /* HEADER */
+  header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    height: 64px;
+    background: rgba(8,10,14,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(0,229,255,0.4); }
+    50% { opacity: 0.8; transform: scale(1.2); box-shadow: 0 0 0 6px rgba(0,229,255,0); }
+  }
+
+  nav { display: flex; align-items: center; gap: 32px; }
+  nav a {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: var(--accent); }
+
+  .header-right { display: flex; align-items: center; gap: 16px; }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--accent);
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .live-dot {
+    width: 5px; height: 5px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: blink 1.2s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 100px 40px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 70% 40%, rgba(0,229,255,0.13) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 20% 70%, rgba(255,60,172,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 50% 0%, rgba(123,94,167,0.14) 0%, transparent 60%);
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black, transparent);
+  }
+
+  .hero-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.3s;
+  }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(52px, 8vw, 110px);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    max-width: 900px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.5s;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    margin-top: 28px;
+    max-width: 480px;
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1.7;
+    font-weight: 300;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.7s;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 40px;
+    margin-top: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.9s;
+  }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .stat-num span { color: var(--accent); }
+  .stat-label { font-size: 12px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 30px;
+    right: 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 1.2s;
+  }
+  .scroll-line {
+    width: 40px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--text3));
+    position: relative;
+    overflow: hidden;
+  }
+  .scroll-line::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: var(--accent);
+    animation: scrollLine 2s ease-in-out infinite 1.5s;
+  }
+  @keyframes scrollLine {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* TICKER */
+  .ticker-wrap {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    padding: 10px 0;
+  }
+  .ticker {
+    display: flex;
+    gap: 0;
+    animation: ticker 30s linear infinite;
+    white-space: nowrap;
+  }
+  .ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 32px;
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--text2);
+    letter-spacing: 0.5px;
+  }
+  .ticker-item .tag { font-size: 10px; border: 1px solid; padding: 1px 6px; border-radius: 3px; text-transform: uppercase; }
+  .ticker-item .tag-new-t { color: var(--accent); border-color: rgba(0,229,255,0.35); background: rgba(0,229,255,0.07); }
+  .ticker-item .tag-hot-t { color: var(--accent2); border-color: rgba(255,60,172,0.35); background: rgba(255,60,172,0.07); }
+  .ticker-item .tag-trend-t { color: var(--gold); border-color: rgba(240,192,64,0.35); background: rgba(240,192,64,0.07); }
+  .ticker-sep { color: var(--border2); }
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* MAIN LAYOUT */
+  main { padding: 60px 40px; max-width: 1400px; margin: 0 auto; }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .section-title span { color: var(--accent); }
+  .section-count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text3);
+    letter-spacing: 1px;
+  }
+
+  /* FILTERS */
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+  .filter-btn {
+    padding: 7px 16px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    font-size: 12px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: none;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+  }
+
+  /* FEATURED TOOL */
+  .featured-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 2px;
+    margin-bottom: 2px;
+  }
+
+  .featured-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+    cursor: none;
+  }
+  .featured-card:hover { border-color: rgba(0,229,255,0.35); }
+  .featured-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .featured-card:hover::before { opacity: 1; }
+
+  .card-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .card-tag {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    border: 1px solid;
+  }
+  .tag-hot { color: var(--accent2); border-color: rgba(255,60,172,0.3); background: rgba(255,60,172,0.06); }
+  .tag-new { color: var(--accent); border-color: rgba(0,229,255,0.3); background: rgba(0,229,255,0.06); }
+  .tag-trending { color: var(--gold); border-color: rgba(240,192,64,0.3); background: rgba(240,192,64,0.06); }
+  .tag-tool { color: var(--accent3); border-color: rgba(123,94,167,0.3); background: rgba(123,94,167,0.06); }
+  .tag-research { color: #6EE7B7; border-color: rgba(110,231,183,0.3); background: rgba(110,231,183,0.06); }
+
+  .card-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .featured-card h2 {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 2.5vw, 36px);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    margin-bottom: 14px;
+  }
+  .featured-card p {
+    color: var(--text2);
+    font-size: 14px;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text3);
+    font-family: var(--font-mono);
+  }
+  .card-meta-dot { width: 3px; height: 3px; background: var(--border2); border-radius: 50%; }
+
+  .btn-visit {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    color: var(--accent);
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    transition: gap 0.2s;
+    cursor: none;
+  }
+  .btn-visit:hover { gap: 12px; }
+  .btn-visit svg { transition: transform 0.2s; }
+  .btn-visit:hover svg { transform: translate(2px, -2px); }
+
+  /* RATING STARS */
+  .stars { color: var(--gold); font-size: 12px; letter-spacing: 1px; }
+
+  /* TOOL GRID */
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2px;
+    margin-bottom: 60px;
+  }
+
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+    cursor: none;
+    display: none;
+  }
+  .tool-card.visible { display: block; }
+  .tool-card:hover {
+    background: var(--surface2);
+    border-color: rgba(0,229,255,0.25);
+    transform: translateY(-2px);
+  }
+  .tool-card:hover .tool-arrow { color: #33ECFF; }
+
+  .tool-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .tool-card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tool-card p {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .tool-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+
+  .tool-arrow {
+    transition: all 0.2s;
+    color: var(--accent);
+  }
+
+  .free-badge {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: #6EE7B7;
+    border: 1px solid rgba(110,231,183,0.2);
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* NEWS SECTION */
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-bottom: 60px;
+  }
+
+  .news-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid transparent;
+    padding: 28px;
+    transition: all 0.3s;
+    cursor: none;
+    position: relative;
+    overflow: hidden;
+  }
+  .news-card:nth-child(1) { border-left-color: var(--accent); }
+  .news-card:nth-child(2) { border-left-color: var(--accent2); }
+  .news-card:nth-child(3) { border-left-color: var(--gold); }
+  .news-card:nth-child(4) { border-left-color: #6EE7B7; }
+  .news-card:nth-child(5) { border-left-color: var(--accent3); }
+  .news-card:nth-child(6) { border-left-color: var(--accent); }
+  .news-card:hover { border-color: var(--border2); background: var(--surface2); }
+
+  .news-category {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .news-card:nth-child(1) .news-category { color: var(--accent); background: rgba(0,229,255,0.08); }
+  .news-card:nth-child(2) .news-category { color: var(--accent2); background: rgba(255,60,172,0.08); }
+  .news-card:nth-child(3) .news-category { color: var(--gold); background: rgba(240,192,64,0.08); }
+  .news-card:nth-child(4) .news-category { color: #6EE7B7; background: rgba(110,231,183,0.08); }
+  .news-card:nth-child(5) .news-category { color: var(--accent3); background: rgba(123,94,167,0.1); }
+  .news-card:nth-child(6) .news-category { color: var(--accent); background: rgba(0,229,255,0.08); }
+
+  .news-card h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.3px;
+    margin-bottom: 10px;
+  }
+  .news-card h3 a {
+    color: var(--text);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .news-card h3 a:hover { color: var(--accent); }
+
+  .news-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+    font-weight: 300;
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .news-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text3);
+    letter-spacing: 0.5px;
+  }
+
+  /* LOADING */
+  .loading-state {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text3);
+    font-size: 13px;
+    font-family: var(--font-mono);
+    padding: 40px 0;
+  }
+  .loading-spinner {
+    width: 18px; height: 18px;
+    border: 1px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* TRENDING SIDEBAR SECTION */
+  .split-section {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 2px;
+    margin-bottom: 60px;
+    align-items: start;
+  }
+
+  .trending-list { background: var(--surface); border: 1px solid var(--border); }
+  .trending-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--text3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .trending-item {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: none;
+    transition: background 0.2s;
+  }
+  .trending-item:last-child { border-bottom: none; }
+  .trending-item:hover { background: var(--bg3); }
+  .trending-rank {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--border2);
+    min-width: 36px;
+    line-height: 1;
+  }
+  .trending-item:hover .trending-rank { color: var(--accent); }
+  .trending-info h4 { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+  .trending-info p { font-size: 12px; color: var(--text3); font-family: var(--font-mono); }
+
+  /* NEWSLETTER */
+  .newsletter {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 60px;
+  }
+  .newsletter::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 50% 70% at 30% 50%, rgba(0,229,255,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 70% 50%, rgba(255,60,172,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .newsletter h2 {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 10px;
+  }
+  .newsletter p { color: var(--text2); font-size: 14px; margin-bottom: 28px; font-weight: 300; }
+  .newsletter-form {
+    display: flex;
+    gap: 8px;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .newsletter-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    padding: 12px 16px;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .newsletter-input:focus { border-color: var(--accent); }
+  .newsletter-input::placeholder { color: var(--text3); }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: 3px;
+    cursor: none;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .btn-primary:hover { background: #33ECFF; transform: translateY(-1px); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .footer-brand {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+  }
+  .footer-links {
+    display: flex;
+    gap: 24px;
+  }
+  .footer-links a {
+    font-size: 12px;
+    color: var(--text3);
+    text-decoration: none;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--accent); }
+  .footer-copy {
+    font-size: 12px;
+    color: var(--text3);
+    font-family: var(--font-mono);
+  }
+
+  /* SEARCH BAR */
+  .search-wrap {
+    position: relative;
+    margin-bottom: 36px;
+    max-width: 480px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+  }
+  .search-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    padding: 12px 16px 12px 42px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text3); }
+
+  /* UTILITY */
+  .mt-60 { margin-top: 60px; }
+  .divider { height: 1px; background: var(--border); margin: 60px 0; }
+
+  /* CATEGORY COLORS */
+  .cat-writing { background: rgba(255,60,172,0.1); }
+  .cat-coding { background: rgba(0,229,255,0.1); }
+  .cat-image { background: rgba(123,94,167,0.1); }
+  .cat-video { background: rgba(240,192,64,0.1); }
+  .cat-audio { background: rgba(110,231,183,0.1); }
+  .cat-research { background: rgba(129,140,248,0.1); }
+
+  /* ANIMATED COUNTER */
+  .counter { display: inline-block; }
+
+  /* TOOLTIP */
+  [data-tooltip] { position: relative; }
+  [data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    padding: 5px 10px;
+    border-radius: 3px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    letter-spacing: 0.5px;
+  }
+  [data-tooltip]:hover::after { opacity: 1; }
+
+  /* BACK TO TOP */
+  .back-top {
+    position: fixed;
+    bottom: 32px;
+    right: 40px;
+    width: 44px; height: 44px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    z-index: 50;
+    color: var(--text2);
+  }
+  .back-top.visible { opacity: 1; transform: translateY(0); }
+  .back-top:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    z-index: 200;
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- HEADER -->
+<header>
+  <a href="#" class="logo">
+    <div class="logo-dot"></div>
+    NeuralPulse
+  </a>
+  <nav>
+    <a href="#tools">Tools</a>
+    <a href="#news">News</a>
+    <a href="#trending">Trending</a>
+    <a href="#newsletter">Newsletter</a>
+  </nav>
+  <div class="header-right">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      Live
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-tag">// The AI Intelligence Hub</div>
+  <h1>Stay <em>ahead</em><br>of the curve.</h1>
+  <p class="hero-sub">NeuralPulse tracks the fastest-moving space in tech — curated AI tools, live news, and weekly trend reports for builders and learners.</p>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num"><span class="counter" data-target="2400">0</span>+</div>
+      <div class="stat-label">Tools Tracked</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num"><span class="counter" data-target="340">0</span></div>
+      <div class="stat-label">This Week</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num"><span class="counter" data-target="18">0</span>K+</div>
+      <div class="stat-label">Subscribers</div>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    Scroll to explore
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker" id="ticker">
+    <span class="ticker-item"><span class="tag tag-new-t">new</span> GPT-4o now free for all users <span class="ticker-sep">///</span></span>
+    <span class="ticker-item"><span class="tag tag-hot-t">hot</span> Sora video generation opens to creators <span class="ticker-sep">///</span></span>
+    <span class="ticker-item"><span class="tag tag-trend-t">trending</span> Claude Sonnet 4.6 surpasses benchmarks <span class="ticker-sep">///</span></span>
+    <span class="ticker-item"><span class="tag tag-new-t">new</span> Google Gemini 2.0 multimodal update <span class="ticker-sep">///</span></span>
+    <span class="ticker-item"><span class="tag tag-hot-t">hot</span> Mistral releases open-source LLM <span class="ticker-sep">///</span></span>
+    <span class="ticker-item"><span class="tag tag-trend-t">trending</span> AI agents replace manual workflows <span class="ticker-sep">///</span></span>
+    <span class="ticker-item"><span class="tag tag-new-t">new</span> Midjourney V7 drops with new controls <span class="ticker-sep">///</span></span>
+    <span class="ticker-item"><span class="tag tag-hot-t">hot</span> Perplexity AI raises $500M <span class="ticker-sep">///</span></span>
+    <!-- Duplicate for seamless loop -->
+    <span class="ticker-item"><span class="tag tag-new-t">new</span> GPT-4o now free for all users <span class="ticker-sep">///</span></span>
+    <span class="ticker-item"><span class="tag tag-hot-t">hot</span> Sora video generation opens to creators <span class="ticker-sep">///</span></span>
+    <span class="ticker-item"><span class="tag tag-trend-t">trending</span> Claude Sonnet 4.6 surpasses benchmarks <span class="ticker-sep">///</span></span>
+    <span class="ticker-item"><span class="tag tag-new-t">new</span> Google Gemini 2.0 multimodal update <span class="ticker-sep">///</span></span>
+    <span class="ticker-item"><span class="tag tag-hot-t">hot</span> Mistral releases open-source LLM <span class="ticker-sep">///</span></span>
+    <span class="ticker-item"><span class="tag tag-trend-t">trending</span> AI agents replace manual workflows <span class="ticker-sep">///</span></span>
+    <span class="ticker-item"><span class="tag tag-new-t">new</span> Midjourney V7 drops with new controls <span class="ticker-sep">///</span></span>
+    <span class="ticker-item"><span class="tag tag-hot-t">hot</span> Perplexity AI raises $500M <span class="ticker-sep">///</span></span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <!-- FEATURED -->
+  <section id="tools">
+    <div class="section-header">
+      <div class="section-title">Featured <span>Tools</span></div>
+      <div class="section-count">UPDATED TODAY</div>
+    </div>
+
+    <div class="featured-grid">
+      <div class="featured-card">
+        <div class="card-eyebrow">
+          <span class="card-tag tag-hot">🔥 Hot</span>
+          <span class="card-num">Tool of the Week</span>
+        </div>
+        <h2>Claude Sonnet 4.6 — The New Standard</h2>
+        <p>Anthropic's latest model now rivals GPT-4 at a fraction of the cost. With a 1M token context window in beta and near-human computer use, it's reshaping what developers expect from AI assistants. Free tier available.</p>
+        <div class="card-footer">
+          <div class="card-meta">
+            <span>AI Chat</span>
+            <span class="card-meta-dot"></span>
+            <span>Free + Pro</span>
+            <span class="card-meta-dot"></span>
+            <div class="stars">★★★★★</div>
+          </div>
+          <a href="https://claude.ai" target="_blank" rel="noopener" class="btn-visit">
+            Visit Tool
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="featured-card">
+        <div class="card-eyebrow">
+          <span class="card-tag tag-new">✦ New</span>
+          <span class="card-num">Rising Fast</span>
+        </div>
+        <h2>Perplexity Comet — AI Browser Agent</h2>
+        <p>Perplexity's new autonomous browser agent searches, reads, and compiles research across dozens of tabs without you lifting a finger. A glimpse at how we'll browse the web in 2026.</p>
+        <div class="card-footer">
+          <div class="card-meta">
+            <span>Research</span>
+            <span class="card-meta-dot"></span>
+            <span>Free Beta</span>
+            <span class="card-meta-dot"></span>
+            <div class="stars">★★★★☆</div>
+          </div>
+          <a href="https://perplexity.ai" target="_blank" rel="noopener" class="btn-visit">
+            Visit Tool
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEARCH + FILTERS -->
+  <div class="mt-60">
+    <div class="search-wrap">
+      <div class="search-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </div>
+      <input type="text" class="search-input" placeholder="Search AI tools..." id="searchInput">
+    </div>
+    <div class="filters" id="filters">
+      <button class="filter-btn active" data-cat="all">All Tools</button>
+      <button class="filter-btn" data-cat="writing">✍️ Writing</button>
+      <button class="filter-btn" data-cat="coding">💻 Coding</button>
+      <button class="filter-btn" data-cat="image">🎨 Image</button>
+      <button class="filter-btn" data-cat="video">🎬 Video</button>
+      <button class="filter-btn" data-cat="audio">🎵 Audio</button>
+      <button class="filter-btn" data-cat="research">🔬 Research</button>
+    </div>
+
+    <div class="tools-grid" id="toolsGrid">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- NEWS -->
+  <section id="news">
+    <div class="section-header">
+      <div class="section-title">Latest <span>News</span></div>
+      <div class="section-count" id="newsCount">FETCHING LIVE...</div>
+    </div>
+    <div id="newsGrid" class="news-grid">
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        Fetching latest AI news...
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- TRENDING + QUICK LINKS -->
+  <section id="trending">
+    <div class="section-header">
+      <div class="section-title">Trending <span>Now</span></div>
+      <div class="section-count">PAST 7 DAYS</div>
+    </div>
+    <div class="split-section">
+      <div id="newsExtra" class="news-grid" style="grid-template-columns: repeat(2, 1fr);"></div>
+      <div class="trending-list">
+        <div class="trending-header">Top Searches</div>
+        <div id="trendingList">
+          <!-- populated by JS -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section id="newsletter">
+    <div class="newsletter">
+      <h2>Don't miss what's next.</h2>
+      <p>Weekly digest of the top AI tools, breakthroughs, and trends — curated for builders.</p>
+      <div class="newsletter-form">
+        <input type="email" class="newsletter-input" placeholder="your@email.com" id="emailInput">
+        <button class="btn-primary" onclick="subscribe()">Subscribe →</button>
+      </div>
+      <p id="subMsg" style="margin-top:14px; font-size:13px; color: var(--accent); display:none;">✓ You're on the list. Welcome aboard.</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">NeuralPulse<span style="color:var(--accent)">.</span></div>
+  <div class="footer-links">
+    <a href="#">About</a>
+    <a href="#">Submit a Tool</a>
+    <a href="#">API</a>
+    <a href="#">Twitter</a>
+  </div>
+  <div class="footer-copy">© 2026 NeuralPulse. Built for builders.</div>
+</footer>
+
+<div class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+</div>
+
+<script>
+// TOOLS DATA
+const tools = [
+  { name: "ChatGPT", desc: "OpenAI's flagship chat model. Best for general-purpose reasoning, writing, and code generation.", cat: "writing", icon: "🤖", bg: "cat-coding", free: true, stars: 5, link: "https://chat.openai.com" },
+  { name: "GitHub Copilot", desc: "AI pair programmer that autocompletes code in your IDE. Trained on billions of lines of public code.", cat: "coding", icon: "⚡", bg: "cat-coding", free: false, stars: 5, link: "https://github.com/features/copilot" },
+  { name: "Midjourney", desc: "The gold standard of AI image generation. Photorealistic and artistic imagery from text prompts.", cat: "image", icon: "🎨", bg: "cat-image", free: false, stars: 5, link: "https://midjourney.com" },
+  { name: "Runway ML", desc: "Professional AI video generation and editing. Used by filmmakers and studios worldwide.", cat: "video", icon: "🎬", bg: "cat-video", free: true, stars: 4, link: "https://runwayml.com" },
+  { name: "ElevenLabs", desc: "Ultra-realistic AI voice synthesis and cloning. Supports 29 languages with emotional range.", cat: "audio", icon: "🎙️", bg: "cat-audio", free: true, stars: 5, link: "https://elevenlabs.io" },
+  { name: "Perplexity AI", desc: "AI-powered search engine that cites its sources. Replaces Google for research-heavy queries.", cat: "research", icon: "🔍", bg: "cat-research", free: true, stars: 5, link: "https://perplexity.ai" },
+  { name: "Notion AI", desc: "Write, summarize, and brainstorm directly inside your Notion workspace.", cat: "writing", icon: "📝", bg: "cat-writing", free: false, stars: 4, link: "https://notion.so" },
+  { name: "Cursor", desc: "The AI-first code editor. Understands your entire codebase and makes sweeping edits in seconds.", cat: "coding", icon: "⌨️", bg: "cat-coding", free: true, stars: 5, link: "https://cursor.sh" },
+  { name: "DALL-E 3", desc: "OpenAI's image model with the best text rendering in any AI art tool available today.", cat: "image", icon: "🖼️", bg: "cat-image", free: false, stars: 4, link: "https://openai.com/dall-e-3" },
+  { name: "Suno AI", desc: "Create full songs with vocals and instruments from a text prompt in under 30 seconds.", cat: "audio", icon: "🎵", bg: "cat-audio", free: true, stars: 4, link: "https://suno.ai" },
+  { name: "Gemini Advanced", desc: "Google's most capable AI with Deep Research mode and 1M context window. Integrates with Google Workspace.", cat: "research", icon: "💎", bg: "cat-research", free: false, stars: 4, link: "https://gemini.google.com" },
+  { name: "Writesonic", desc: "Long-form AI writing for blogs, ads, and product descriptions. SEO-optimized by default.", cat: "writing", icon: "✍️", bg: "cat-writing", free: true, stars: 3, link: "https://writesonic.com" },
+];
+
+// RENDER TOOLS
+function renderTools(list) {
+  const grid = document.getElementById('toolsGrid');
+  grid.innerHTML = list.map((t, i) => `
+    <div class="tool-card visible" style="animation: fadeUp 0.5s ease forwards ${i * 0.06}s; opacity:0">
+      <div class="tool-icon ${t.bg}">${t.icon}</div>
+      <h3>
+        ${t.name}
+        ${t.free ? '<span class="free-badge">Free</span>' : ''}
+      </h3>
+      <p>${t.desc}</p>
+      <div class="tool-card-footer">
+        <div class="stars">${'★'.repeat(t.stars)}${'☆'.repeat(5-t.stars)}</div>
+        <a href="${t.link}" target="_blank" rel="noopener" class="btn-visit tool-arrow">
+          Visit →
+        </a>
+      </div>
+    </div>
+  `).join('');
+}
+
+renderTools(tools);
+
+// FILTERS
+document.getElementById('filters').addEventListener('click', e => {
+  if (!e.target.matches('.filter-btn')) return;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  const cat = e.target.dataset.cat;
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  filterTools(cat, search);
+});
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  const cat = document.querySelector('.filter-btn.active').dataset.cat;
+  filterTools(cat, e.target.value.toLowerCase());
+});
+
+function filterTools(cat, search) {
+  const filtered = tools.filter(t =>
+    (cat === 'all' || t.cat === cat) &&
+    (!search || t.name.toLowerCase().includes(search) || t.desc.toLowerCase().includes(search))
+  );
+  renderTools(filtered);
+}
+
+// TRENDING DATA
+const trending = [
+  { name: "Claude Sonnet 4.6", meta: "12.4K searches this week" },
+  { name: "AI Video Generation", meta: "9.8K searches this week" },
+  { name: "Cursor IDE", meta: "8.1K searches this week" },
+  { name: "Open Source LLMs", meta: "7.6K searches this week" },
+  { name: "AI Agents", meta: "6.9K searches this week" },
+  { name: "Midjourney V7", meta: "5.2K searches this week" },
+];
+
+document.getElementById('trendingList').innerHTML = trending.map((t, i) => `
+  <div class="trending-item">
+    <div class="trending-rank">0${i+1}</div>
+    <div class="trending-info">
+      <h4>${t.name}</h4>
+      <p>${t.meta}</p>
+    </div>
+  </div>
+`).join('');
+
+// FALLBACK with real working links
+const fallbackNews = [
+  { title: "OpenAI's Latest Model Sets New Benchmarks", desc: "OpenAI's newest model pushes the frontier on coding, reasoning, and multimodal tasks, with performance gains that are surprising even researchers.", cat: "OpenAI", time: "2h ago", url: "https://openai.com/news" },
+  { title: "Google DeepMind Advances Protein Research", desc: "DeepMind's biology AI tools continue to accelerate drug discovery, with new breakthroughs in protein-ligand interaction prediction.", cat: "Research", time: "4h ago", url: "https://deepmind.google/research" },
+  { title: "Meta Releases New Open-Source AI Models", desc: "Meta's commitment to open-source AI continues with powerful new models available for commercial and research use.", cat: "Open Source", time: "6h ago", url: "https://ai.meta.com" },
+  { title: "Anthropic Publishes New Safety Research", desc: "Anthropic's interpretability team releases groundbreaking findings on how transformer circuits encode concepts and behaviors.", cat: "Anthropic", time: "8h ago", url: "https://anthropic.com/research" },
+  { title: "AI Coding Tools Reshape Developer Workflows", desc: "New studies confirm that AI-assisted coding tools are dramatically changing how developers write, review, and ship software.", cat: "Research", time: "10h ago", url: "https://github.blog" },
+  { title: "Video AI Generation Enters Professional Production", desc: "Runway and competitors are now viable for professional film and commercial production, marking a turning point for the industry.", cat: "Video AI", time: "12h ago", url: "https://runwayml.com" },
+];
+
+function renderNews(articles, gridId) {
+  const grid = document.getElementById(gridId);
+  if (!articles || articles.length === 0) return;
+  grid.innerHTML = articles.map((a, i) => `
+    <div class="news-card" style="animation: fadeUp 0.5s ease forwards ${i * 0.08}s; opacity: 0">
+      <div class="news-category">${a.cat}</div>
+      <h3><a href="${a.url}" target="_blank" rel="noopener">${a.title}</a></h3>
+      <p class="news-desc">${a.desc}</p>
+      <div class="news-footer">
+        <span>${a.time}</span>
+        <a href="${a.url}" target="_blank" rel="noopener" class="btn-visit" style="font-size:11px">Read →</a>
+      </div>
+    </div>
+  `).join('');
+}
+
+// NEWS - Daily cached, multi-source live news via RSS2JSON (free, no key needed)
+const NEWS_CACHE_KEY = 'neuralpulse_news';
+const NEWS_DATE_KEY = 'neuralpulse_news_date';
+
+const RSS_SOURCES = [
+  'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ffeeds.feedburner.com%2FTheAIReport',
+  'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fventurebeat.com%2Fcategory%2Fai%2Ffeed%2F',
+  'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.theverge.com%2Frss%2Fai-artificial-intelligence%2Findex.xml',
+];
+
+// Human-readable time ago
+function timeAgo(dateStr) {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  if (isNaN(then)) return 'Recently';
+  const diff = Math.floor((now - then) / 1000);
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+
+// Strip HTML tags from description
+function stripHtml(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html || '';
+  return tmp.textContent || tmp.innerText || '';
+}
+
+// Guess category from title/content
+function guessCategory(title, content) {
+  const text = (title + ' ' + content).toLowerCase();
+  if (text.includes('openai') || text.includes('gpt') || text.includes('chatgpt')) return 'OpenAI';
+  if (text.includes('google') || text.includes('gemini') || text.includes('deepmind')) return 'Google AI';
+  if (text.includes('anthropic') || text.includes('claude')) return 'Anthropic';
+  if (text.includes('meta') || text.includes('llama')) return 'Meta AI';
+  if (text.includes('image') || text.includes('midjourney') || text.includes('dall-e') || text.includes('stable diffusion')) return 'Image AI';
+  if (text.includes('video') || text.includes('sora') || text.includes('runway')) return 'Video AI';
+  if (text.includes('research') || text.includes('paper') || text.includes('study')) return 'Research';
+  if (text.includes('fund') || text.includes('raise') || text.includes('billion') || text.includes('startup')) return 'Funding';
+  if (text.includes('open source') || text.includes('open-source') || text.includes('mistral')) return 'Open Source';
+  return 'AI News';
+}
+
+async function fetchLiveNews() {
+  // Check cache — only refetch once per day
+  const cachedDate = localStorage.getItem(NEWS_DATE_KEY);
+  const today = new Date().toDateString();
+  if (cachedDate === today) {
+    const cached = localStorage.getItem(NEWS_CACHE_KEY);
+    if (cached) {
+      const articles = JSON.parse(cached);
+      renderNews(articles.slice(0,3), 'newsGrid');
+      renderNews(articles.slice(3,6), 'newsExtra');
+      document.getElementById('newsCount').textContent = `${articles.length} ARTICLES TODAY`;
+      return;
+    }
+  }
+
+  let allArticles = [];
+
+  for (const src of RSS_SOURCES) {
+    try {
+      const res = await fetch(src);
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data.status !== 'ok' || !data.items) continue;
+      const mapped = data.items.slice(0, 4).map(item => ({
+        title: item.title || 'Untitled',
+        desc: stripHtml(item.description || item.content || '').substring(0, 220) + '...',
+        cat: guessCategory(item.title || '', item.description || ''),
+        time: timeAgo(item.pubDate),
+        url: item.link || item.guid || '#'
+      }));
+      allArticles = allArticles.concat(mapped);
+      if (allArticles.length >= 6) break;
+    } catch(e) { continue; }
+  }
+
+  if (allArticles.length < 3) {
+    // Final fallback: curated articles with real links
+    allArticles = fallbackNews;
+  }
+
+  // Cache for the day
+  try {
+    localStorage.setItem(NEWS_CACHE_KEY, JSON.stringify(allArticles.slice(0, 9)));
+    localStorage.setItem(NEWS_DATE_KEY, today);
+  } catch(e) {}
+
+  renderNews(allArticles.slice(0,3), 'newsGrid');
+  renderNews(allArticles.slice(3,6), 'newsExtra');
+  document.getElementById('newsCount').textContent = `${allArticles.length} ARTICLES TODAY`;
+}
+
+fetchLiveNews();
+
+// COUNTER ANIMATION
+function animateCounters() {
+  document.querySelectorAll('.counter').forEach(el => {
+    const target = parseInt(el.dataset.target);
+    let current = 0;
+    const inc = target / 60;
+    const timer = setInterval(() => {
+      current += inc;
+      if (current >= target) { current = target; clearInterval(timer); }
+      el.textContent = Math.floor(current).toLocaleString();
+    }, 20);
+  });
+}
+
+// INTERSECTION OBSERVER for counters
+const heroObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { animateCounters(); heroObserver.disconnect(); } });
+}, { threshold: 0.5 });
+heroObserver.observe(document.querySelector('.hero-stats'));
+
+// CUSTOM CURSOR
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx - 5 + 'px';
+  cursor.style.top = my - 5 + 'px';
+});
+
+function animateRing() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  ring.style.left = rx - 18 + 'px';
+  ring.style.top = ry - 18 + 'px';
+  requestAnimationFrame(animateRing);
+}
+animateRing();
+
+document.querySelectorAll('a, button, .filter-btn, .tool-card, .news-card, .trending-item, .back-top').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.transform = 'scale(2)';
+    ring.style.transform = 'scale(1.5)';
+    ring.style.borderColor = 'rgba(0,229,255,0.6)';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.transform = 'scale(1)';
+    ring.style.transform = 'scale(1)';
+    ring.style.borderColor = 'rgba(0,229,255,0.4)';
+  });
+});
+
+// SCROLL PROGRESS + BACK TO TOP
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+  const bt = document.getElementById('backTop');
+  bt.classList.toggle('visible', window.scrollY > 400);
+});
+
+// SUBSCRIBE
+function subscribe() {
+  const email = document.getElementById('emailInput').value;
+  if (!email || !email.includes('@')) { alert('Please enter a valid email.'); return; }
+  document.getElementById('emailInput').value = '';
+  document.getElementById('subMsg').style.display = 'block';
+}
+</script>
+</body>
+</html>
